@@ -8,7 +8,8 @@
 
 #include "common.h"
 
-struct DecodingParams {
+struct DecodingParams
+{
     // The QKV matrices.
     half *__restrict__ q_ptr;
     half *__restrict__ k_ptr;
@@ -26,7 +27,7 @@ struct DecodingParams {
     int h, h_k;
     // In the case of multi-query and grouped-query attention (MQA/GQA), nheads_k could be
     // different from nheads (query).
-    int h_h_k_ratio;  // precompute h / h_k,
+    int h_h_k_ratio; // precompute h / h_k,
 
     // The O matrix (output).
     half *__restrict__ o_ptr;
