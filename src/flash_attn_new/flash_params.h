@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cuda.h>
+#include <cuda_runtime.h>
 #include <vector>
 
 struct QKV_params {
@@ -27,7 +28,7 @@ struct QKV_params {
     // In the case of multi-query and grouped-query attention (MQA/GQA), nheads_k could be
     // different from nheads_q (query)
     int h_q_h_k_ratio;  // precompute h_q / h_k
-}
+};
 
 struct Flash_Fwd_params : public QKV_params {
     // The O matrix (output)
@@ -53,4 +54,4 @@ struct Flash_Fwd_params : public QKV_params {
 
     cudaDeviceProp *device_prop;
     bool is_sm8x;
-}
+};
