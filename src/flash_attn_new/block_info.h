@@ -1,6 +1,6 @@
 #pragma once
 
-namespace flashnew_block
+namespace flash
 {
     struct BlockInfo
     {

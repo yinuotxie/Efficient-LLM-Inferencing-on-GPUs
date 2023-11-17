@@ -55,3 +55,6 @@ struct Flash_Fwd_params : public QKV_params {
     cudaDeviceProp *device_prop;
     bool is_sm8x;
 };
+
+template <typename T, int Headdim>
+void run_mha_fwd_(Flash_fwd_params &params, cudaStream_t stream);
