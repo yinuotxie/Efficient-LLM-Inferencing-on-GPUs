@@ -15,9 +15,8 @@
 
 MHA_FUNC(flash_attn);
 MHA_FUNC(flash_attn_v2);
-
 MHA_FUNC(decoding_attn);
-MHA_FUNC(decoding_attn_int8);
+MHA_FUNC(decoding_attn_new);
 
 DEFINE_uint32(b, 2, "batch size");
 DEFINE_uint32(sq, 256, "q seq len");
@@ -102,9 +101,11 @@ int main(int argc, char *argv[])
      Tester tester(FLAGS_b, FLAGS_sq, FLAGS_sk, FLAGS_hq, FLAGS_hk, FLAGS_d, FLAGS_is_causal, FLAGS_num_splits, stream,
                    &dev_prop, FLAGS_is_alibi, FLAGS_is_hybrid, FLAGS_prefill_fraction, FLAGS_warmup_iterations,
                    FLAGS_profiling_iterations, FLAGS_sleep_duration, FLAGS_enable_check);
-     tester.evaluate(flash_attn, "Flash-Attention");
-     tester.evaluate(flash_attn_v2, "Flash-Attention-V2");
+     // tester.evaluate(flash_attn, "Flash-Attention");
+     // tester.evaluate(flash_attn_v2, "Flash-Attention-V2");
      tester.evaluate(decoding_attn, "Decoding-Attention");
+
+     tester.evaluate(decoding_attn_new, "Decoding-Attention_New");
 
      //     if (FLAGS_is_decoding) {
      //         tester.evaluate(decoding_attn, "Decoding-Attention");

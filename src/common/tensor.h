@@ -11,12 +11,15 @@
 #include "common.h"
 
 template <typename T>
-class Tensor {
+class Tensor
+{
 public:
     Tensor(const std::vector<size_t> &shape, const std::string &name = "Tensor", float min = -1.0, float max = 1.0)
-        : m_shape(shape), m_name(name), m_min(min), m_max(max) {
+        : m_shape(shape), m_name(name), m_min(min), m_max(max)
+    {
         FAI_CHECK_GT(shape.size(), 0);
-        for (size_t i = 0; i < shape.size(); ++i) {
+        for (size_t i = 0; i < shape.size(); ++i)
+        {
             FAI_CHECK_GT(shape[i], 0);
         }
 
@@ -31,7 +34,8 @@ public:
         std::random_device rd;
         std::default_random_engine engine{rd()};
         std::uniform_real_distribution<float> uniform(m_min, m_max);
-        for (size_t i = 0; i < m_elem_num; ++i) {
+        for (size_t i = 0; i < m_elem_num; ++i)
+        {
             m_host_ptr[i] = static_cast<T>(uniform(engine));
         }
 
@@ -40,35 +44,43 @@ public:
         FLOG("%s: %zu, cpu: %p, gpu: %p", m_name.c_str(), m_elem_num, m_host_ptr, m_dev_ptr);
     }
 
-    ~Tensor() {
-        if (m_host_ptr) {
+    ~Tensor()
+    {
+        if (m_host_ptr)
+        {
             delete[] m_host_ptr;
             m_host_ptr = nullptr;
         }
 
-        if (m_dev_ptr) {
+        if (m_dev_ptr)
+        {
             FAI_CHECK_CUDART_ERROR(cudaFree((void *)m_dev_ptr));
             m_dev_ptr = nullptr;
         }
     }
 
-    std::vector<size_t> getShape() const {
+    std::vector<size_t> getShape() const
+    {
         return m_shape;
     }
 
-    size_t getElemNum() const {
+    size_t getElemNum() const
+    {
         return m_elem_num;
     }
 
-    T *getHostPtr() const {
+    T *getHostPtr() const
+    {
         return m_host_ptr;
     }
 
-    T *getDevPtr() const {
+    T *getDevPtr() const
+    {
         return m_dev_ptr;
     }
 
-    void tearUp(Tensor<T> *base) {
+    void tearUp(Tensor<T> *base)
+    {
         FAI_CHECK(base);
         FAI_CHECK_EQ(m_elem_num, base->getElemNum());
 
@@ -76,30 +88,36 @@ public:
             cudaMemcpy(m_dev_ptr, base->getDevPtr(), m_elem_num * sizeof(T), cudaMemcpyDeviceToDevice));
     }
 
-    void moveToHost() {
+    void moveToHost()
+    {
         FAI_CHECK_CUDART_ERROR(cudaMemcpy(m_host_ptr, m_dev_ptr, m_elem_num * sizeof(T), cudaMemcpyDeviceToHost));
     }
 
-    void moveToDevice() {
+    void moveToDevice()
+    {
         FAI_CHECK_CUDART_ERROR(cudaMemcpy(m_dev_ptr, m_host_ptr, m_elem_num * sizeof(T), cudaMemcpyHostToDevice));
     }
 
-    void memSetHost() {
+    void memSetHost()
+    {
         memset(m_host_ptr, 0, m_elem_num * sizeof(T));
     }
 
-    void memSetDevice() {
+    void memSetDevice()
+    {
         FAI_CHECK_CUDART_ERROR(cudaMemset(m_dev_ptr, 0, m_elem_num * sizeof(T)));
     }
 
-    void checkValue(Tensor<T> *base) {
+    void checkValue(Tensor<T> *base)
+    {
         FAI_CHECK(base);
         FAI_CHECK_EQ(m_elem_num, base->getElemNum());
 
         m_max_diff = 0.0;
         m_avg_diff = 0.0;
         double diff = 0.0;
-        for (size_t i = 0; i < m_elem_num; ++i) {
+        for (size_t i = 0; i < m_elem_num; ++i)
+        {
             diff = static_cast<double>(
                 std::abs(static_cast<float>(m_host_ptr[i]) - static_cast<float>(base->getHostPtr()[i])));
             m_max_diff = std::max(m_max_diff, diff);

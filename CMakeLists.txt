@@ -67,7 +67,7 @@ file (GLOB FAI_SRCS
     ${PROJECT_SOURCE_DIR}/src/flash_attn/*.cu
     ${PROJECT_SOURCE_DIR}/src/flash_attn_v2/*.cu
     ${PROJECT_SOURCE_DIR}/src/decoding_attn/*.cu
-    ${PROJECT_SOURCE_DIR}/src/decoding_attn_int8/*.cu
+    ${PROJECT_SOURCE_DIR}/src/decoding_attn_new/*.cu
 )
 
 cuda_add_executable (flash_attention_inference ${FAI_SRCS})
