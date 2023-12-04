@@ -125,8 +125,19 @@ public:
         }
 
         m_avg_diff /= static_cast<double>(m_elem_num);
+        // printf("Max diff: %f, avg diff: %f\n", m_max_diff, m_avg_diff);
 
         FLOG("Max diff: %f, avg diff: %f", m_max_diff, m_avg_diff);
+    }
+
+    void printTensor()
+    {
+        printf("%s: ", m_name.c_str());
+        for (size_t i = 0; i < m_elem_num; ++i)
+        {
+            printf("%f ", static_cast<float>(m_host_ptr[i]));
+        }
+        printf("\n");
     }
 
 private:

@@ -1,6 +1,6 @@
 #include "cutlass/half.h"
-#include "decoding_attn_new/decoding.h"
-#include "decoding_attn_new/static_switch.h"
+#include "flash_decoding/flash_decoding.h"
+#include "flash_decoding/static_switch.h"
 #include "tensor.h"
 
 /**
@@ -17,23 +17,21 @@
  * @param stream CUDA stream for asynchronous execution.
  * @param dev_prop CUDA device properties.
  *
- * @return DecodingParams struct filled with necessary parameters for the decoding process.
+ * @return FlashDecodingParams struct filled with necessary parameters for the decoding process.
  */
-DecodingParams set_mha_decoding_fwd_params(Tensor<half> *Q, Tensor<half> *K, Tensor<half> *V, Tensor<half> *O,
-                                           Tensor<int> *cu_seqlens_q, Tensor<int> *cu_seqlens_k, size_t seqlens_q,
-                                           size_t seqlens_k, cudaStream_t stream, cudaDeviceProp *dev_prop)
+FlashDecodingParams set_flash_decoding_params(Tensor<half> *Q, Tensor<half> *K, Tensor<half> *V, Tensor<half> *O,
+                                              Tensor<int> *cu_seqlens_q, Tensor<int> *cu_seqlens_k, size_t seqlens_q,
+                                              size_t seqlens_k, cudaStream_t stream, cudaDeviceProp *dev_prop)
 {
     size_t num_q_head = Q->getShape()[1];
     size_t head_dim = Q->getShape()[2];
     size_t num_k_head = K->getShape()[1];
     size_t batch_size = cu_seqlens_q->getShape()[0] - 1;
 
-    printf("num_q_head: %d, head_dim: %d, num_k_head: %d, batch_size: %d\n", num_q_head, head_dim, num_k_head, batch_size);
-
     FAI_CHECK_LE(head_dim, 256);
     FAI_CHECK_EQ(num_q_head % num_k_head, 0);
 
-    DecodingParams params;
+    FlashDecodingParams params;
 
     // Reset the parameters
     memset(&params, 0, sizeof(params));
@@ -79,12 +77,12 @@ DecodingParams set_mha_decoding_fwd_params(Tensor<half> *Q, Tensor<half> *K, Ten
 /**
  * @brief Execute the forward pass of multi-head attention decoding.
  *
- * @param params The DecodingParams struct containing all necessary parameters for the forward pass.
+ * @param params The FlashDecodingParams struct containing all necessary parameters for the forward pass.
  */
-void run_mha_decoding_fwd_new(const DecodingParams &params)
+void run_flash_decoding_new(const FlashDecodingParams &params)
 {
     DECODING_FWD_HEADDIM_SWITCH(params.head_dim, [&]
-                                { run_mha_decoding_fwd_new_<kHeadDim>(params); });
+                                { run_flash_decoding_new_<kHeadDim>(params); });
 }
 
 /**
@@ -104,10 +102,18 @@ void run_mha_decoding_fwd_new(const DecodingParams &params)
  * @param dev_prop CUDA device properties.
  * @param is_alibi Boolean indicating if alibi is used.
  */
-void decoding_attn_new(Tensor<half> *Q, Tensor<half> *K, Tensor<half> *V, Tensor<half> *O,
-                       Tensor<int> *cu_seqlens_q, Tensor<int> *cu_seqlens_k, size_t seqlens_q, size_t seqlens_k,
-                       bool is_causal, int num_splits, cudaStream_t stream, cudaDeviceProp *dev_prop, bool is_alibi)
+void flash_decoding(Tensor<half> *Q, Tensor<half> *K, Tensor<half> *V, Tensor<half> *O,
+                    Tensor<int> *cu_seqlens_q, Tensor<int> *cu_seqlens_k, size_t seqlens_q, size_t seqlens_k,
+                    bool is_causal, int num_splits, cudaStream_t stream, cudaDeviceProp *dev_prop, bool is_alibi)
 {
-    static DecodingParams params = set_mha_decoding_fwd_params(Q, K, V, O, cu_seqlens_q, cu_seqlens_k, seqlens_q, seqlens_k, stream, dev_prop);
-    run_mha_decoding_fwd_new(params);
+    static FlashDecodingParams params = set_flash_decoding_params(Q, K, V, O, cu_seqlens_q, cu_seqlens_k, seqlens_q, seqlens_k, stream, dev_prop);
+
+    FLOG("------------------Flash Decoding Params------------------");
+    FLOG("seq_len_q: %d, seq_len_k: %d, batch_size: %d, head_dim: %d", params.seqlen_q, params.seqlen_k, params.batch_size, params.head_dim);
+    FLOG("num_q_head: %d, num_k_head: %d, q_k_head_ratio: %d", params.num_q_head, params.num_k_head, params.q_k_head_ratio);
+    FLOG("q_row_stride: %d, k_row_stride: %d, v_row_stride: %d, q_head_stride: %d, k_head_stride: %d, v_head_stride: %d", params.q_row_stride, params.k_row_stride, params.v_row_stride, params.q_head_stride, params.k_head_stride, params.v_head_stride);
+    cu_seqlens_q->printTensor();
+    cu_seqlens_k->printTensor();
+
+    run_flash_decoding_new(params);
 }

@@ -37,6 +37,7 @@ option (CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 
 set (CUDA_VERBOSE_BUILD ${FAI_VERBOSE_MAKEFILE})
 set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++17 -Xptxas=-v -Xcompiler -fopenmp --expt-relaxed-constexpr")
+set (CMAKE_CUDA_ARCHITECTURES "86")
 if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -arch=sm_${CMAKE_CUDA_ARCHITECTURES} -g -lineinfo -O0")
 else ()
@@ -67,7 +68,7 @@ file (GLOB FAI_SRCS
     ${PROJECT_SOURCE_DIR}/src/flash_attn/*.cu
     ${PROJECT_SOURCE_DIR}/src/flash_attn_v2/*.cu
     ${PROJECT_SOURCE_DIR}/src/decoding_attn/*.cu
-    ${PROJECT_SOURCE_DIR}/src/decoding_attn_new/*.cu
+    ${PROJECT_SOURCE_DIR}/src/flash_decoding/*.cu
 )
 
 cuda_add_executable (flash_attention_inference ${FAI_SRCS})

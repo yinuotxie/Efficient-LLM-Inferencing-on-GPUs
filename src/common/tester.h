@@ -16,7 +16,7 @@ public:
                     size_t dim = 128, bool is_causal = true, int num_splits = 0, cudaStream_t stream = nullptr,
                     cudaDeviceProp *dev_prop = nullptr, bool is_alibi = false, bool is_hybrid = false,
                     size_t prefill_fraction = 0, size_t warmup_iterations = 1, size_t profiling_iterations = 10,
-                    size_t sleep_duration = 100, bool enable_check = false)
+                    size_t sleep_duration = 100, bool enable_check = true)
         : m_batch(batch),
           m_seq_q(seq_q),
           m_seq_k(seq_k),
@@ -90,6 +90,8 @@ public:
 
         if (m_enable_check)
         {
+            // print out the m_enable_check info
+            // printf(enable_check ? "Enable check\n" : "Disable check\n");
             clock_t start = clock();
             mha_cpu(m_Q, m_K, m_V, m_base, m_cu_seq_q, m_cu_seq_k, m_seq_q, m_seq_k, m_is_causal, m_is_alibi);
             clock_t end = clock();
@@ -397,7 +399,7 @@ private:
     const size_t m_warmup_iterations = 1;
     const size_t m_profiling_iterations = 10;
     const size_t m_sleep_duration = 100;
-    const bool m_enable_check = false;
+    const bool m_enable_check = true;
 
     // for hybrid
     size_t m_prefill_batch = 0;

@@ -3,7 +3,7 @@
 #include <cstddef>
 #include "common.h"
 
-struct DecodingParams
+struct FlashDecodingParams
 /**
  * @brief Struct representing the parameters for decoding attention.
  *
@@ -31,7 +31,7 @@ struct DecodingParams
     // The number of heads.
     int num_q_head, num_k_head;
     // In the case of multi-query and grouped-query attention (MQA/GQA), nheads_k could be different from nheads (query).
-    int q_k_head_ratio = num_q_head / num_k_head;
+    int q_k_head_ratio;
 
     // The O matrix parameters
     half *__restrict__ o_ptr;
@@ -52,4 +52,4 @@ struct DecodingParams
 };
 
 template <int HeadDim>
-void run_mha_decoding_fwd_new_(const DecodingParams &params);
+void run_flash_decoding_new_(const FlashDecodingParams &params);
