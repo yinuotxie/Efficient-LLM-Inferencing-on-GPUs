@@ -7,7 +7,9 @@ UPenn CIS5650 Final Project
 # Efficient Large Language Model (LLM) Decoding 
 
 ## Introduction
-Large Language Models (LLMs), central to contemporary natural language processing, face challenges in text generation efficiency due to their substantial computational requirements. This project aims to advance LLM inference efficiency by minimizing computational load and optimizing GPU performance.
+Large language models (LLMs) like ChatGPT or Llama have recently gained a lot of attention. However, operating them is still quite costly. The expense of generating a single response, which might be around $0.01 for a brief interaction using an 8xA100 instance on AWS at the moment, can become substantial when considering billions of users engaging in multiple interactions daily. Certain tasks, such as code auto-completion which activates with each new character typed, are particularly resource-intensive. As LLMs are increasingly employed in various applications, even minor improvements in generation efficiency can lead to significant overall cost reductions.
+
+The process of LLM inference, or "decoding", is sequential, with tokens being produced **one at a time**. To generate complete sentences of `N` tokens, the model must go through `N` iterations. The good news is that it's possible to store previously computed tokens, meaning that each step of generation isn't influenced by the total length of the context. The exception is the attention mechanism, which doesn’t scale as efficiently with the length of the context.
 
 ---
 
