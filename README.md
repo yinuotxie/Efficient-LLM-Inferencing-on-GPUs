@@ -83,6 +83,6 @@ FlashDecoding focuses on optimizing the entire LLM decoding pipeline for GPUs. I
 FlashDecoding++ is an advanced version that further refines GPU utilization strategies. It introduces novel techniques for managing large-scale language model inference, thereby boosting decoding speeds significantly.
 
 # PagedAttention Algorithm
-The PagedAttention algorithm addresses memory management in large LLMs. It introduces a paged memory system, allowing for efficient handling of large models without compromising on speed or accuracy.
+This is an attention algorithm inspired by virtual memory and paging techniques in operating systems. This approach divides a request's key-value (KV) cache into blocks, each containing attention keys and values for a fixed number of tokens. Unlike traditional methods, these blocks are not stored in contiguous space, allowing for more flexible memory management similar to the operating system's virtual memory. By avoiding contiguous space caching, we reduce both internal and external fragmentation in GPU memory. This leads to more efficient memory utilization, enabling the handling of larger batch sizes and consequently achieving higher throughput.
 
 ---
