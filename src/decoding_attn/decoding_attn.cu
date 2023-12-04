@@ -11,7 +11,8 @@
 DecodingParams set_mha_decoding_fwd_params(Tensor<half> *Q, Tensor<half> *K, Tensor<half> *V, Tensor<half> *O,
                                            Tensor<int> *cu_seq_q, Tensor<int> *cu_seq_k, size_t max_seq_q,
                                            size_t max_seq_k, cudaStream_t stream, cudaDeviceProp *dev_prop,
-                                           bool is_alibi) {
+                                           bool is_alibi)
+{
     size_t head_q = Q->getShape()[1];
     size_t dim = Q->getShape()[2];
     size_t head_k = K->getShape()[1];
@@ -30,10 +31,10 @@ DecodingParams set_mha_decoding_fwd_params(Tensor<half> *Q, Tensor<half> *K, Ten
     params.k_ptr = K->getDevPtr();
     params.v_ptr = V->getDevPtr();
 
-    params.q_row_stride = head_q * dim;  // used for going from one token to the next
+    params.q_row_stride = head_q * dim; // used for going from one token to the next
     params.k_row_stride = head_k * dim;
     params.v_row_stride = head_k * dim;
-    params.q_head_stride = dim;  // used for going from one head to the next
+    params.q_head_stride = dim; // used for going from one head to the next
     params.k_head_stride = dim;
     params.v_head_stride = dim;
 
@@ -66,13 +67,16 @@ DecodingParams set_mha_decoding_fwd_params(Tensor<half> *Q, Tensor<half> *K, Ten
     return params;
 }
 
-void run_mha_decoding_fwd(const DecodingParams &params) {
-    DECODING_FWD_HEADDIM_SWITCH(params.d, [&] { run_mha_decoding_fwd_<HeadDim>(params); });
+void run_mha_decoding_fwd(const DecodingParams &params)
+{
+    DECODING_FWD_HEADDIM_SWITCH(params.d, [&]
+                                { run_mha_decoding_fwd_<HeadDim>(params); });
 }
 
 void decoding_attn(Tensor<half> *Q, Tensor<half> *K, Tensor<half> *V, Tensor<half> *O, Tensor<int> *cu_seq_q,
                    Tensor<int> *cu_seq_k, size_t max_seq_q, size_t max_seq_k, bool is_causal, int num_splits,
-                   cudaStream_t stream, cudaDeviceProp *dev_prop, bool is_alibi) {
+                   cudaStream_t stream, cudaDeviceProp *dev_prop, bool is_alibi)
+{
     static DecodingParams params =
         set_mha_decoding_fwd_params(Q, K, V, O, cu_seq_q, cu_seq_k, max_seq_q, max_seq_k, stream, dev_prop, is_alibi);
     run_mha_decoding_fwd(params);

@@ -7,6 +7,7 @@
 #include "decoding_attn/decoding_fwd_launch_template.h"
 
 template <>
-void run_mha_decoding_fwd_<64>(const DecodingParams &params) {
+void run_mha_decoding_fwd_<64>(const DecodingParams &params)
+{
     mha_decoding_fwd<64, 256, 4>(params);
 }

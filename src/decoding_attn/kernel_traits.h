@@ -21,8 +21,7 @@ struct DecodingKernelTraits
     static constexpr size_t groups_per_warp = warp_size / group_size;
     static constexpr size_t groups_per_block = groups_per_warp * warps_per_block;
 
-    // each thread in the CUDA kernel is designed to copy 16 bytes of data in each iteration of a particular loop or
-    // operation.
+    // each thread in the CUDA kernel is designed to copy 16 bytes of data in each iteration of a particular loop or operation.
     static constexpr size_t thread_copy_bytes = 16;
     /*
     This line calculates the number of elements that can be copied by each thread in one operation, based on the size of each element.

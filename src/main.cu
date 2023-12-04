@@ -15,9 +15,8 @@
 
 MHA_FUNC(flash_attn);
 MHA_FUNC(flash_attn_v2);
-
 MHA_FUNC(decoding_attn);
-MHA_FUNC(decoding_attn_int8);
+MHA_FUNC(flash_decoding);
 
 DEFINE_uint32(b, 2, "batch size");
 DEFINE_uint32(sq, 256, "q seq len");
@@ -34,7 +33,7 @@ DEFINE_uint32(prefill_fraction, 0, "percentage occupied by prefill in hybrid mod
 DEFINE_uint32(warmup_iterations, 1, "warmup iteration numbers and average the result");
 DEFINE_uint32(profiling_iterations, 10, "profiling iteration numbers and average the result");
 DEFINE_uint32(sleep_duration, 100, "sleep_milliseconds between profiling");
-DEFINE_bool(enable_check, false, "check the GPU result against the CPU result");
+DEFINE_bool(enable_check, true, "check the GPU result against the CPU result");
 DEFINE_uint32(cpu_procs, omp_get_num_procs(), "processor num used of CPU");
 DEFINE_uint32(gpu_rank, 0, "the used GPU rank");
 
@@ -102,14 +101,11 @@ int main(int argc, char *argv[])
      Tester tester(FLAGS_b, FLAGS_sq, FLAGS_sk, FLAGS_hq, FLAGS_hk, FLAGS_d, FLAGS_is_causal, FLAGS_num_splits, stream,
                    &dev_prop, FLAGS_is_alibi, FLAGS_is_hybrid, FLAGS_prefill_fraction, FLAGS_warmup_iterations,
                    FLAGS_profiling_iterations, FLAGS_sleep_duration, FLAGS_enable_check);
-     tester.evaluate(flash_attn, "Flash-Attention");
-     tester.evaluate(flash_attn_v2, "Flash-Attention-V2");
+     // tester.evaluate(flash_attn, "Flash-Attention");
+     // tester.evaluate(flash_attn_v2, "Flash-Attention-V2");
      tester.evaluate(decoding_attn, "Decoding-Attention");
 
-     //     if (FLAGS_is_decoding) {
-     //         tester.evaluate(decoding_attn, "Decoding-Attention");
-     //         tester.evaluate(decoding_attn_int8, "Decoding-Attention-Int8");
-     //     }
+     // tester.evaluate(flash_decoding, "Flash-Decoding");
 
      GFLAGS_NAMESPACE::ShutDownCommandLineFlags();
 
