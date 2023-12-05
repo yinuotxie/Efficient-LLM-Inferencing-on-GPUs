@@ -77,7 +77,8 @@ FlashDecoding focuses on optimizing the entire LLM decoding pipeline for GPUs. I
 The images below shows the difference between the flash attention and the flash decoding.
 
 ![Flash Attention](media/flash_attn.gif) (Image Source: [Flash-Decoding for long-context inference](https://pytorch.org/blog/flash-decoding/))
-![Flash Decoding](media/flash_decoding_demo.gif) (Image Source: [Flash-Decoding for long-context inference](https://pytorch.org/blog/flash-decoding/))
+
+![Flash Decoding](media/flash_decoding.gif) (Image Source: [Flash-Decoding for long-context inference](https://pytorch.org/blog/flash-decoding/))
 
 ### FlashDecoding++
 FlashDecoding++ is an advanced version that further refines GPU utilization strategies. It introduces novel techniques for managing large-scale language model inference, thereby boosting decoding speeds significantly.
