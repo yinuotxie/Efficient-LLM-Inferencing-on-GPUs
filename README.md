@@ -90,7 +90,5 @@ FlashDecoding++ is an advanced version that further refines GPU utilization stra
 ### Perplexity
 
 ### Memory Usage
-# PagedAttention Algorithm
-This is an attention algorithm inspired by virtual memory and paging techniques in operating systems. This approach divides a request's key-value (KV) cache into blocks, each containing attention keys and values for a fixed number of tokens. Unlike traditional methods, these blocks are not stored in contiguous space, allowing for more flexible memory management similar to the operating system's virtual memory. By avoiding contiguous space caching, we reduce both internal and external fragmentation in GPU memory. This leads to more efficient memory utilization, enabling the handling of larger batch sizes and consequently achieving higher throughput.
 
 ---
