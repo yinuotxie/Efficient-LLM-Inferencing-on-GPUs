@@ -2,7 +2,9 @@
 # Efficient Large Language Model (LLM) Inferencing on GPUs 
 
 ## Introduction
-Large Language Models (LLMs), central to contemporary natural language processing, face challenges in text generation efficiency due to their substantial computational requirements. This project aims to advance LLM inference efficiency by minimizing computational load and optimizing GPU performance.
+Large language models (LLMs) like ChatGPT or Llama have recently gained a lot of attention. However, operating them is still quite costly. The expense of generating a single response, which might be around $0.01 for a brief interaction using an 8xA100 instance on AWS at the moment, can become substantial when considering billions of users engaging in multiple interactions daily. Certain tasks, such as code auto-completion which activates with each new character typed, are particularly resource-intensive. As LLMs are increasingly employed in various applications, even minor improvements in generation efficiency can lead to significant overall cost reductions.
+
+The process of LLM inference, or "decoding", is sequential, with tokens being produced **one at a time**. To generate complete sentences of `N` tokens, the model must go through `N` iterations. The good news is that it's possible to store previously computed tokens, meaning that each step of generation isn't influenced by the total length of the context. The exception is the attention mechanism, which doesn’t scale as efficiently with the length of the context.
 
 ---
 
@@ -66,12 +68,10 @@ FlashAttention-1 introduces an IO-aware optimization to the attention mechanism.
 Building upon FlashAttention-1, this version further improves parallel processing and workload partitioning. It aims to maximize GPU utilization and reduce latency in LLM decoding.
 
 ## KV Cache Optimization
+### PagedAttention
+This is an attention algorithm inspired by virtual memory and paging techniques in operating systems. This approach divides a request's key-value (KV) cache into blocks, each containing attention keys and values for a fixed number of tokens. Unlike traditional methods, these blocks are not stored in contiguous space, allowing for more flexible memory management similar to the operating system's virtual memory. By avoiding contiguous space caching, we reduce both internal and external fragmentation in GPU memory. This leads to more efficient memory utilization, enabling the handling of larger batch sizes and consequently achieving higher throughput.
 
-### PagedAttention Algorithm
-The PagedAttention algorithm addresses memory management in large LLMs. It introduces a paged memory system, allowing for efficient handling of large models without compromising on speed or accuracy.
-
-## Decode Optimization
-### FlashDecoding
+## FlashDecoding
 FlashDecoding focuses on optimizing the entire LLM decoding pipeline for GPUs. It restructures traditional decoding algorithms to better suit the parallel nature of GPU architectures.
 
 The images below shows the difference between the flash attention and the flash decoding.
@@ -89,5 +89,7 @@ FlashDecoding++ is an advanced version that further refines GPU utilization stra
 ### Perplexity
 
 ### Memory Usage
+# PagedAttention Algorithm
+This is an attention algorithm inspired by virtual memory and paging techniques in operating systems. This approach divides a request's key-value (KV) cache into blocks, each containing attention keys and values for a fixed number of tokens. Unlike traditional methods, these blocks are not stored in contiguous space, allowing for more flexible memory management similar to the operating system's virtual memory. By avoiding contiguous space caching, we reduce both internal and external fragmentation in GPU memory. This leads to more efficient memory utilization, enabling the handling of larger batch sizes and consequently achieving higher throughput.
 
 ---
