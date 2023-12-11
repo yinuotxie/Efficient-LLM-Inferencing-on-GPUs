@@ -173,7 +173,7 @@ In practice, step (1) involves no GPU operations, as the key/value chunks are si
 
 ---
 
-### FlashDecoding++
+### [FlashDecoding++](https://arxiv.org/pdf/2311.01282.pdf)
 
 While Flash-Decoding significantly improved GPU utilization, there was still room for optimization, particularly in the computation of softmax values. In the original Flash-Decoding algorithm, the softmax calculation requires subtracting the maximum attention score value from each score. Given the parallelization across the key/value sequence length, this maximum value varies for each split. Consequently, it necessitates storing the maximum value for each split and using synchronization to compute the global maximum across all splits. According to the paper, this partial softmax operation introduces approximately 20% overhead in the attention process.
 
