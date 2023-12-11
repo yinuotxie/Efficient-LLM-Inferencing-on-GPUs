@@ -198,7 +198,15 @@ However, as shown, the distribution of elements differs among LLMs. This variabi
 
 ## Performance Evaluation
 
-### Throughput
+### LLM Inference Service: First Token Latency
+
+![](media/first_token_latency.svg)
+
+Here we are testing the latency of the first token/word generation during LLM serving. The latency is measured (in milliseoncds) from the time when the user send the generation request to the time when the first token is generated and send back to the user. The red bar is a similar-sized network package send to the service to measure the underlying network latency. The yellow bar is when the when we disable caching, and we are using the simple attention kernel. The blue bar is when we switch to the flash decoding kernel. And finally the green bar is when we enable caching. This cache is very similar to the "first bounce cache" in project3 when we implement the path tracer by reusing the previous intermediate results. Whether it is paged or not doesn't matter here.
+
+The network latency is negligible compared to the generation time. As the model size increases, the effect of caching decreases and the acceleration from flash decoding starts to shine. When the model size becomes too large, memory becomes the bottleneck so cache doesn't help much. However, flash decoding can decrease the memory access when calculating softmax, results in more siginificant speedup.
+
+### LLM Inference Service: Throughput
 
 ### Perplexity
 
