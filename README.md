@@ -248,6 +248,13 @@ The memory throughput is also improved with more warps trying to fetch data from
 
 As indicated in the launch statistics, our optimized version of flash decoding uses 80 registers per thread vs 96 of the baseline. This results in even more performance gain and could be optimized further with some loss of kernel generalization (i.e. drop support of some wired attention and model). From the occupancy information, we see high registers per thread is the main cause of low occupancy. With our optimization, the theoretical occupancy goes up from ~40% to 50%, a 20% increase. And the achieved occupancy has an increase of over 300% percent, allowing us to achieve much better GPU utilization.
 
+## Google Slides
+- [Project Pitch](https://docs.google.com/presentation/d/1vYXUgxaUblWG90pnoBXRdgAYPddH7fgptU-5m6mMVZU/edit#slide=id.p)
+- [Milestone 1](https://docs.google.com/presentation/d/1lzf_PbofKWlHH4tNWwzR7XEY06Li9M6MPq8gfuu-Q-k/edit#slide=id.g29b74c9771b_0_202)
+- [Milestone 2](https://docs.google.com/presentation/d/150rOZKQcCkgoNt3ELZ5CPNvqKlW49KlQcGZfTNUYqgw/edit#slide=id.g29f879e3429_0_597)
+- [Milestone 3](https://docs.google.com/presentation/d/1yNnvDcDKmQn46Rr0L0AIGb1vOJT_y9mKO750N97bQh8/edit#slide=id.g2a231685d46_0_790)
+- [Final Presentation](https://docs.google.com/presentation/d/1uxKdmMSDSc7dy9-agVsRY6MFUf75MCGBQ3Ro5P84Wk4/edit#slide=id.g2a5a575508f_1_205)
+
 ## References
 
 - **Accelerated Inference for Large Transformer Models Using NVIDIA Triton Inference Server**: [NVIDIA Developer Blog](https://developer.nvidia.com/blog/accelerated-inference-for-large-transformer-models-using-nvidia-fastertransformer-and-nvidia-triton-inference-server/)
