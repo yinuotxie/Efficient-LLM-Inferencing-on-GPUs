@@ -202,15 +202,33 @@ However, as shown, the distribution of elements differs among LLMs. This variabi
 
 ![](media/first_token_latency.svg)
 
-Here we are testing the latency of the first token/word generation during LLM serving. The latency is measured (in milliseoncds) from the time when the user send the generation request to the time when the first token is generated and send back to the user. The red bar is a similar-sized network package send to the service to measure the underlying network latency. The yellow bar is when the when we disable caching, and we are using the simple attention kernel. The blue bar is when we switch to the flash decoding kernel. And finally the green bar is when we enable caching. This cache is very similar to the "first bounce cache" in project3 when we implement the path tracer by reusing the previous intermediate results. Whether it is paged or not doesn't matter here.
+Here we are testing the latency of the first token/word generation during LLM serving. The latency is measured (in milliseconds) from the time when the user send the generation request to the time when the first token is generated and send back to the user. The red bar is a similar-sized network package send to the service to measure the underlying network latency. The yellow bar is when the when we disable caching, and we are using the simple attention kernel. The blue bar is when we switch to the flash decoding kernel. And finally the green bar is when we enable caching. This cache is very similar to the "first bounce cache" in project3 when we implement the path tracer by reusing the previous intermediate results. Whether it is paged or not doesn't matter here.
 
-The network latency is negligible compared to the generation time. As the model size increases, the effect of caching decreases and the acceleration from flash decoding starts to shine. When the model size becomes too large, memory becomes the bottleneck so cache doesn't help much. However, flash decoding can decrease the memory access when calculating softmax, results in more siginificant speedup.
+The network latency is negligible compared to the generation time. As the model size increases, the effect of caching decreases and the acceleration from flash decoding starts to shine. When the model size becomes too large, memory becomes the bottleneck so cache doesn't help much. However, flash decoding can decrease the memory access when calculating softmax, results in more significant speedup.
 
 ### LLM Inference Service: Throughput
 
-### Perplexity
+### LLM Inference Service: Kernel Profiling
 
-### Memory Usage
+In general, the optimized flash decoding kernel achieves better compute and memory throughput than the baseline attention kernel. Both kernels are optimized as much as possible, and Nsight Compute doesn't show any shared memory bank conflicts in either kernel. Tiling matmul plus softmax using a few rounds of warp/block level reduction, is the most simple and efficient way to compute attention and avoid bank conflicts.
+
+Since flash decoding excels at small batch size and long context, we profile baseline attention and flash decoding used in inference service with a batch size of 1 and context length of 4096. The results are shown below, with **the baseline attention kernel being green and flash decoding kernel being blue**.
+
+![](media/vllm_kern_profile_sol.png)
+
+Flash decoding gives us a 2x speedup in compute throughput and 50% speedup in memory throughput. A very exciting first insight!
+
+![](media/vllm_kern_profile_compute.png)
+
+Our optimized version of flash decoding, when using half precision float point (FP16), tries to fuse 2 float point calculation in one instruction. And with a lot of fused multiply add (FMA) instructions, the kernel achieves much better compute throughput. We even have some inline PTX code that utilize the Tensor Core to do small matrix multiplication as evident in the compute workload analysis.
+
+![](media/vllm_kern_profile_memory.png)
+
+The memory throughput is also improved with more warps trying to fetch data from global memory. We also have a better chance of "hiding the latency" of global memory access with more warps to schedule. L1 hit rate is up more than 20 times. We believe it is related to the work partitioning of flash decoding. Each thread is handling a smaller chunk of data (stronger locality), and the data is more likely to be reused by other threads in the same warp. So the L1 cache is much more effective. Though the full report is way to lengthy to include here, we do want to point out Nsight Compute shows no room for improvement in shared memory bank conflicts, indicating its optimality in terms of shared mem access.
+
+![](media/vllm_kern_profile_occupancy.png)
+
+As indicated in the launch statistics, our optimized version of flash decoding uses 80 registers per thread vs 96 of the baseline. This results in even more performance gain and could be optimized further with some loss of kernel generalization (i.e. drop support of some wired attention and model). From the occupancy information, we see high registers per thread is the main cause of low occupancy. With our optimization, the theoretical occupancy goes up from ~40% to 50%, a 20% increase. And the achieved occupancy has an increase of over 300% percent, allowing us to achieve much better GPU utilization.
 
 ## References
 
