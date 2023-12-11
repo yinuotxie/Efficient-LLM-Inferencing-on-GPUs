@@ -206,7 +206,25 @@ Here we are testing the latency of the first token/word generation during LLM se
 
 The network latency is negligible compared to the generation time. As the model size increases, the effect of caching decreases and the acceleration from flash decoding starts to shine. When the model size becomes too large, memory becomes the bottleneck so cache doesn't help much. However, flash decoding can decrease the memory access when calculating softmax, results in more significant speedup.
 
-### LLM Inference Service: Throughput
+### LLM Inference Service: Throughput*
+
+> NOTE: Throughput involves a wide range of factors and can change significantly with different settings. The following results are only for reference.
+
+Throughput is measured by calculating the average number tokens generated per second over a long period of time. It is a end to end performance metric that involves a wide range of factors, including network latency, model, batching strategy, and lastly, the attention kernel. The red bar is throughput measured from HuggingFace, yellow is from Microsoft's DeepSpeed, blue and green is based on vLLM with different attention kernels.
+
+![](media/inference_throughput.svg)
+
+As shown in the graph, the kernel alone doesn't have a significant impact on performance. But a general trend is that flash decoding is faster than base paged attention kernel. At least we know DeepSpeed have flash decoding attention and more optimization. Considering the effect of batching strategy and other tricks each framework implements, the kernel performance comparison is more evident when batch size is small, i.e. one. DeepSpeed does have better kernel implementation, but its "dynamic split-fuse" batching may cause overhead when the batch size is large and the context is short, resulting in its lower peak throughput than vLLM.
+
+In another setting, the Mistral-7B model, DeepSpeed take the lead and achieves 2x the performance of our custom vLLM.
+
+| Framework | Model | Batch Size | Context Length | Throughput (tokens/s) |
+| :-------: | :---: | :--------: | :------------: | :-------------------: |
+| DeepSpeed | Mistral-7B | Dynamic Batching | 32k | 2082 |
+| vLLM (Base Kernel) | Mistral-7B | Dynamic Batching | 32k | 1067 |
+| vLLM (Flash Decoding) | Mistral-7B | Dynamic Batching | 32k | 1130 |
+
+HuggingFace failed to run the throughput tests in this setting possibly due to memory limitation and its poor caching strategy (memory fragmentation leading to much larger mem usage when inference). This finding is more evidence that the kernel is not the only factor that determines the performance of the inference service. The batching strategy, caching, and other tricks each framework implements also play a significant role.
 
 ### LLM Inference Service: Kernel Profiling
 
