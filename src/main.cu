@@ -13,6 +13,8 @@
                Tensor<int> *cu_seq_k, size_t max_seq_q, size_t max_seq_k, bool is_causal, int num_splits, \
                cudaStream_t stream, cudaDeviceProp *dev_prop, bool is_alibi)
 
+// MHA_FUNC(attention);
+// MHA_FUNC(attention_v2);
 MHA_FUNC(flash_attn);
 MHA_FUNC(flash_attn_v2);
 MHA_FUNC(decoding_attn);
@@ -101,6 +103,8 @@ int main(int argc, char *argv[])
      Tester tester(FLAGS_b, FLAGS_sq, FLAGS_sk, FLAGS_hq, FLAGS_hk, FLAGS_d, FLAGS_is_causal, FLAGS_num_splits, stream,
                    &dev_prop, FLAGS_is_alibi, FLAGS_is_hybrid, FLAGS_prefill_fraction, FLAGS_warmup_iterations,
                    FLAGS_profiling_iterations, FLAGS_sleep_duration, FLAGS_enable_check);
+     // tester.evaluate(attention, "attention gpu v1");
+     // tester.evaluate(attention_v2, "attention gpu v2");
      // tester.evaluate(flash_attn, "Flash-Attention");
      // tester.evaluate(flash_attn_v2, "Flash-Attention-V2");
      tester.evaluate(decoding_attn, "Decoding-Attention");
