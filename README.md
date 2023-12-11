@@ -1,5 +1,13 @@
 
-# Efficient Large Language Model (LLM) Inferencing on GPUs 
+# Efficient Large Language Model (LLM) Inferencing on GPUs
+
+The LLM Inference Engine is deployed at [llm.toytag.net](https://llm.toytag.net). It consists of math and engineering tricks that make efficient hosting possible, and make the model aware of the latest info about this course (even this particular project). Feel free to try it out!
+
+![LLM Inference Engine](media/llm_inference_engine.png)
+
+The inference service runs on a single NVIDIA L4 Tensor Core GPU with 24 GiB VRAM that consumes less than 75W of power. The large language model is [Intel's Neural Chat](https://huggingface.co/Intel/neural-chat-7b-v3-1) model finetuned from [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-v0.1) base model with 7 billion parameters, which is also a GPT style language model. The service takes more than 20 GiB of VRAM, and ~7 billion is about the largest model we could run without any precision loss on this GPU.
+
+This repo contains our implementation of Flash Attention and its variants. The LLM inference service code is a fork from vLLM project with our **custom kernel**, **frontend**, and **docker build & compose rules** for hassle-free deployment. The service project is presented as a git submodule in the current repo, or you could directly visit [this link](https://github.com/toytag/vllm/tree/8e41936777ea375e4cd4f463249f0870bbb5f06a).
 
 ## Introduction
 Large language models (LLMs) like ChatGPT or Llama have recently gained a lot of attention. However, operating them is still quite costly. The expense of generating a single response, which might be around $0.01 for a brief interaction using an 8xA100 instance on AWS at the moment, can become substantial when considering billions of users engaging in multiple interactions daily. Certain tasks, such as code auto-completion which activates with each new character typed, are particularly resource-intensive. As LLMs are increasingly employed in various applications, even minor improvements in generation efficiency can lead to significant overall cost reductions.
@@ -25,7 +33,7 @@ Our ultimate goal is to synthesize the best features from these studies to creat
 
 The conventional LLM decoding algorithm heavily relies on the attention mechanism. While this mechanism is pivotal for the model's effectiveness, it also represents a significant source of computational inefficiency in LLMs. The overall LLM inference pipeline is illustrated as follows:
 
-![LLM Inference Pipeline](media/llm_inferece_dataflow.png) 
+![LLM Inference Pipeline](media/llm_inferece_dataflow.png)
 The inference pipeline can be segmented into three primary phases:
 
 1. **Prefill**: In this phase, the attention mechanism generates the initial token and establishes the Key-Value (KV) cache based on the user's input query. This phase predominantly involves the General Matrix Multiply (GEMM) operation.
@@ -81,7 +89,7 @@ Prior to the development of FlashAttention, numerous attempts were made to accel
 
 In the era of modern GPUs, where computational speed often surpasses memory speed, most attention operations are hindered by memory access bottlenecks. Traditional attention mechanisms typically involve eight read-write operations to the HBM.
 
-![GPU Memory Hierarchy](media/gpu_memory.png) 
+![GPU Memory Hierarchy](media/gpu_memory.png)
 
 The figure above shows that SRAM has far higher read-write speeds compared to HBM, albeit with significantly less storage capacity. To optimize this, FlashAttention introduces a method to reduce read-write operations to HBM. It segments matrices involved in computations into smaller blocks for processing in SRAM, thereby increasing read-write efficiency and reducing dependency on HBM.
 
@@ -99,7 +107,7 @@ For comprehensive details on the FlashAttention algorithm, refer to the [origina
 
 ### [FlashAttention-2](https://arxiv.org/pdf/2307.08691.pdf)
 
-FlashAttention-2 builds on the foundation laid by FlashAttention-1, introducing key enhancements to boost performance further. These improvements focus on optimizing computational efficiency and parallel processing capabilities on GPUs. 
+FlashAttention-2 builds on the foundation laid by FlashAttention-1, introducing key enhancements to boost performance further. These improvements focus on optimizing computational efficiency and parallel processing capabilities on GPUs.
 
 * **Reduction in Non-Matmul FLOPs**: The updated algorithm minimizes non-matrix multiplication (non-matmul) Floating Point Operations Per Second (FLOPs). This is crucial because modern GPUs, like Nvidia's with Tensor Cores, are highly efficient at matrix multiplication operations. For instance, the A100 GPU can theoretically perform 312 TFLOPs/s of FP16/BF16 matmul, but only 19.5 TFLOPs/s of non-matmul FP32 operations. Essentially, each non-matmul FLOP is about 16 times more costly than a matmul FLOP. By focusing more on matmul FLOPs, FlashAttention-2 ensures higher throughput.
 
@@ -146,7 +154,7 @@ Flash-Decoding, an extension of FlashAttention, introduces a novel parallelizati
 Below are visual comparisons highlighting the differences between Flash Attention and Flash Decoding:
 
 #### Flash Attention
-![Flash Attention](media/flash_attn.gif) 
+![Flash Attention](media/flash_attn.gif)
 
 #### Flash Decoding
 ![Flash Decoding](media/flash_decoding.gif)
@@ -188,7 +196,7 @@ The statistical distribution of elements in the input vectors of softmax varies 
 However, as shown, the distribution of elements differs among LLMs. This variability implies the necessity for manual tuning of the maximum value for each specific LLM. For models like OPT-6.7B, which exhibit a broad distribution, the unified max value might not be optimally effective. Thus, while FlashDecoding++ streamlines the softmax calculation, it also introduces considerations for model-specific adjustments.
 
 
-## Performance Evaluation 
+## Performance Evaluation
 
 ### Throughput
 
